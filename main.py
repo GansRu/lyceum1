@@ -1,5 +1,7 @@
+import random
 import requests
 
+map_types = ['map', 'sat']
 
 def map_set(toponym_to_find):
     geocod_server = "http://geocode-maps.yandex.ru/1.x/"
@@ -14,16 +16,27 @@ def map_set(toponym_to_find):
     json_response = response.json()
     top = json_response["response"]["GeoObjectCollection"][
         "featureMember"][0]["GeoObject"]
-
     coord = top["Point"]["pos"]
-    up_co = list(map(float, top["boundedBy"]["Envelope"]['upperCorner'].split()))
-    low_co = list(map(float, top["boundedBy"]["Envelope"]['lowerCorner'].split()))
-    points = [i for i in coord.split()]
-    spn = [str(up_co[0] - low_co[0]), str(up_co[1] - low_co[1])]
-    map_params = {
-        "l": "map",
-        "pt": "{0},pm2dgl".format(','.join(points)),
-        "ll": ','.join(points),
-        "spn": ','.join(spn)
-    }
+    point = list(coord.split())
+    search_server = "https://search-maps.yandex.ru/v1/"
+    api_key = "dda3ddba-c9ea-4ead-9010-f43fbc15c6e3"
+    address = ','.join(point)
+    search_params = {
+        "apikey": api_key,
+        "text": "достопримечательность",
+        "lang": "ru_RU",
+        "ll": address,
+        "type": "biz"}
+    response = requests.get(search_server, params=search_params)
+    json_response = response.json()
+    map_params = []
+    for i in range(4):
+        map_type = map_types[random.randint(0, 1)]
+        point_1 = json_response["features"][i]["geometry"]["coordinates"]
+        point_2 = "{0},{1}".format(point_1[0], point_1[1])
+        d = "0.01"
+        map_params.append({
+            "ll": point_2,
+            "spn": ",".join([d, d]),
+            "l": map_type})
     return map_params
