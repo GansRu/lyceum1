@@ -1,12 +1,24 @@
-import sys
-from io import BytesIO
-import requests
-from PIL import Image
+import pygame
 from main import map_set
+from map_show import show
+import random
 
-toponym_to_find = " ".join(sys.argv[1:])
-map_params = map_set(toponym_to_find)
-map_api_server = "http://static-maps.yandex.ru/1.x/"
-response = requests.get(map_api_server, params=map_params)
-Image.open(BytesIO(
-    response.content)).show()
+
+cities_pack = ['Москва', 'Минск', 'Cтарый Петергоф']
+city = cities_pack[random.randint(0, 3)]
+map = map_set(city)
+if not map:
+    print('ERROR')
+    exit()
+n = 1
+cn = 1
+fps = 10
+pygame.init()
+screen = pygame.display.set_mode((600, 450))
+clock = pygame.time.Clock()
+for event in pygame.event.get():
+    if event.type == pygame.QUIT: pygame.quit()
+    else:
+        n += 5
+        show(n, map, screen)
+        clock.tick(fps)
